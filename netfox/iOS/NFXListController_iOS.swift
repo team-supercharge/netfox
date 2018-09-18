@@ -120,7 +120,10 @@ class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableView
         if (self.searchController.isActive) {
             return self.filteredTableData.count
         } else {
-            return NFXHTTPModelManager.sharedInstance.getModels().count
+            let models = NFXHTTPModelManager.sharedInstance.getModels()
+            let url = HAR.generateWithModelObjects(modelObjects: models)
+            print(url ?? "no url")
+            return models.count
         }
     }
     
