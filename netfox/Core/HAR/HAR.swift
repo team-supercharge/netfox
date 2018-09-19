@@ -239,6 +239,7 @@ class HAR {
             let jsonData = try JSONSerialization.data(withJSONObject: resultDictionary,
                                                       options: JSONSerialization.WritingOptions.prettyPrinted)
             let resultString = String(data: jsonData, encoding: .utf8) ?? "wrong string"
+
             print("👉\(resultString)👈")
 
             let fileName = String(format: "%@ %@.har", appNameVersionCombined, Date().description)
