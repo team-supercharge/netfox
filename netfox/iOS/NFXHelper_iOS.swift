@@ -13,9 +13,9 @@ extension UIWindow
 {
     override open func motionEnded(_ motion: UIEventSubtype, with event: UIEvent?)
     {
-        if NFX.sharedInstance().getSelectedGesture() == .shake {
+        if NFX.shared.getSelectedGesture() == .shake {
             if (event!.type == .motion && event!.subtype == .motionShake) {
-                NFX.sharedInstance().motionDetected()
+                NFX.shared.motionDetected()
             }
         } else {
             super.motionEnded(motion, with: event)

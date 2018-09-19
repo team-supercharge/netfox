@@ -25,7 +25,7 @@ class NFXSettingsController_iOS: NFXSettingsController, UITableViewDelegate, UIT
         self.title = "Settings"
         
         self.tableData = HTTPModelShortType.allValues
-        self.filters =  NFX.sharedInstance().getCachedFilters()
+        self.filters =  NFX.shared.getCachedFilters()
         
         self.edgesForExtendedLayout = UIRectEdge()
         self.extendedLayoutIncludesOpaqueBars = false
@@ -70,7 +70,7 @@ class NFXSettingsController_iOS: NFXSettingsController, UITableViewDelegate, UIT
     {
         super.viewWillDisappear(animated)
         
-        NFX.sharedInstance().cacheFilters(self.filters)
+        NFX.shared.cacheFilters(self.filters)
     }
     
     @objc func nfxURLButtonPressed()
@@ -118,7 +118,7 @@ class NFXSettingsController_iOS: NFXSettingsController, UITableViewDelegate, UIT
             cell.textLabel?.text = "Logging"
             let nfxEnabledSwitch: UISwitch
             nfxEnabledSwitch = UISwitch()
-            nfxEnabledSwitch.setOn(NFX.sharedInstance().isEnabled(), animated: false)
+            nfxEnabledSwitch.setOn(NFX.shared.isEnabled(), animated: false)
             nfxEnabledSwitch.addTarget(self, action: #selector(NFXSettingsController_iOS.nfxEnabledSwitchValueChanged(_:)), for: .valueChanged)
             cell.accessoryView = nfxEnabledSwitch
             return cell
@@ -268,9 +268,9 @@ class NFXSettingsController_iOS: NFXSettingsController, UITableViewDelegate, UIT
     @objc func nfxEnabledSwitchValueChanged(_ sender: UISwitch)
     {
         if sender.isOn {
-            NFX.sharedInstance().enable()
+            NFX.shared.enable()
         } else {
-            NFX.sharedInstance().disable()
+            NFX.shared.disable()
         }
     }
     
@@ -285,7 +285,7 @@ class NFXSettingsController_iOS: NFXSettingsController, UITableViewDelegate, UIT
         actionSheetController.addAction(cancelAction)
         
         let yesAction: UIAlertAction = UIAlertAction(title: "Yes", style: .default) { action -> Void in
-            NFX.sharedInstance().clearOldData()
+            NFX.shared.clearOldData()
         }
         actionSheetController.addAction(yesAction)
         

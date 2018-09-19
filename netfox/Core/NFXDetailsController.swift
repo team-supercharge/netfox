@@ -46,18 +46,18 @@ class NFXDetailsController: NFXGenericController {
         var tempString: String
         tempString = String()
         
-        tempString += "[URL] \n\(object.requestURL!)\n\n"
-        tempString += "[Method] \n\(object.requestMethod!)\n\n"
+        tempString += "[URL] \n\(object.requestURL ?? "" )\n\n"
+        tempString += "[Method] \n\(object.requestMethod ?? "")\n\n"
         if !(object.noResponse) {
-            tempString += "[Status] \n\(object.responseStatus!)\n\n"
+            tempString += "[Status] \n\(object.responseStatus ?? 0)\n\n"
         }
-        tempString += "[Request date] \n\(object.requestDate!)\n\n"
+        tempString += "[Request date] \n\(object.requestDate ?? Date())\n\n"
         if !(object.noResponse) {
-            tempString += "[Response date] \n\(object.responseDate!)\n\n"
-            tempString += "[Time interval] \n\(object.timeInterval!)\n\n"
+            tempString += "[Response date] \n\(object.responseDate ?? Date())\n\n"
+            tempString += "[Time interval] \n\(object.timeInterval ?? 0.0)\n\n"
         }
-        tempString += "[Timeout] \n\(object.requestTimeout!)\n\n"
-        tempString += "[Cache policy] \n\(object.requestCachePolicy!)\n\n"
+        tempString += "[Timeout] \n\(object.requestTimeout ?? "")\n\n"
+        tempString += "[Cache policy] \n\(object.requestCachePolicy ?? "")\n\n"
         
         return formatNFXString(tempString)
     }
@@ -95,8 +95,7 @@ class NFXDetailsController: NFXGenericController {
         return tempString
     }
     
-    func getResponseStringFromObject(_ object: NFXHTTPModel) -> NSAttributedString
-    {
+    func getResponseStringFromObject(_ object: NFXHTTPModel) -> NSAttributedString {
         if (object.noResponse) {
             return NSMutableAttributedString(string: "No response")
         }

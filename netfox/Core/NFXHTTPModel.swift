@@ -22,8 +22,8 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
 @objc public class NFXHTTPModel: NSObject
 {
     /// request & response
-    @objc public var HARRequest: HARType?
-    @objc public var HARresponse: HARType?
+    @objc public var HARRequest: HARType = HAR.defaultHARRequest
+    @objc public var HARresponse: HARType = HAR.defaultHARResponse
 
     @objc public var requestURL: String?
     @objc public var requestMethod: String?
@@ -49,13 +49,13 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
     
     @objc public var shortType: NSString = HTTPModelShortType.OTHER.rawValue as NSString
     
-    @objc public var noResponse: Bool = true
-    
-    func saveRequest(_ request: URLRequest)
+    @objc public var noResponse: Bool = false
+
+    public func saveRequest(_ request: URLRequest)
     {
         self.HARRequest = request.HARRepresentation
         self.requestDate = Date()
-        self.requestTime = getTimeFromDate(self.requestDate!)
+        self.requestTime = getTimeFromDate(self.requestDate ?? Date())
         self.requestURL = request.getNFXURL()
         self.requestMethod = request.getNFXMethod()
         self.requestCachePolicy = request.getNFXCachePolicy()
@@ -64,10 +64,32 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         self.requestType = requestHeaders?["Content-Type"] as! String?
         self.requestCurl = request.getCurl()
     }
+
+    /**
+     * Prefill properties with default datas (for socket logging).
+    **/
+    public func prefill() {
+        requestURL = "https://sit-mgw.ferratum.com/mobilegateway/mobilegateway/ferraos/api/graph"
+        requestMethod  = "📡"
+        requestCachePolicy = ""
+        requestDate = Date()
+        requestTime = getTimeFromDate(Date())
+        requestTimeout = "0.0"
+        requestHeaders = URLRequest(url: URL(string: requestURL!)!).allHTTPHeaderFields
+        requestBodyLength = 10
+        requestType = ""
+        requestCurl = ""
+
+        responseStatus = -10
+        responseType = "GraphQL Data"
+        responseDate = Date()
+        responseTime = getTimeFromDate(Date())
+        responseHeaders = URLRequest(url: URL(string: requestURL!)!).allHTTPHeaderFields
+        responseBodyLength = 10
+    }
     
     func saveRequestBody(_ request: URLRequest)
     {
-        print(request.HARRepresentation)
         saveRequestBodyData(request.getNFXBody())
     }
     
@@ -104,7 +126,6 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         formattedResponseLogEntry().appendToFile(filePath: NFXPath.SessionLog)
     }
     
-    
     func saveRequestBodyData(_ data: Data)
     {
         let tempBodyString = NSString.init(data: data, encoding: String.Encoding.utf8.rawValue)
@@ -134,71 +155,74 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         
     }
     
-    fileprivate func prettyOutput(_ rawData: Data, contentType: String? = nil) -> NSString
+    fileprivate func prettyOutput(_ rawData: Data, contentType: String? = nil) -> String
     {
         if let contentType = contentType {
             let shortType = getShortTypeFrom(contentType)
             if let output = prettyPrint(rawData, type: shortType) {
-                return output as NSString
+                return output
             }
         }
-        return NSString(data: rawData, encoding: String.Encoding.utf8.rawValue) ?? ""
+        return String(data: rawData, encoding: .utf8) ?? ""
     }
 
-    @objc public func getRequestBody() -> NSString
-    {
-        guard let data = readRawData(getRequestBodyFilepath()) else {
+    @objc public func getRequestBody() -> String {
+        let filePath = getRequestBodyFilepath()
+        guard let data = readRawData(from: filePath) else {
             return ""
         }
         return prettyOutput(data, contentType: requestType)
     }
     
-    @objc public func getResponseBody() -> NSString
-    {
-        guard let data = readRawData(getResponseBodyFilepath()) else {
-            return ""
+    @objc public func getResponseBody() -> String {
+        let filePath = getResponseBodyFilepath()
+        let missingBodyValue = "Missing body data."
+        guard let data = readRawData(from: filePath) else {
+            if let content = HARresponse[HARConstants.HARContent] as? [String: Any] {
+                do {
+                    let data = try JSONSerialization.data(withJSONObject: content, options: .prettyPrinted)
+                    return String(data: data, encoding: .utf8) ?? missingBodyValue
+                } catch {
+                    return missingBodyValue
+                }
+            } else {
+                return missingBodyValue
+            }
         }
         
         return prettyOutput(data, contentType: responseType)
     }
     
-    @objc public func getRandomHash() -> NSString
-    {
+    @objc public func getRandomHash() -> NSString {
         if !(self.randomHash != nil) {
             self.randomHash = UUID().uuidString as NSString?
         }
         return self.randomHash!
     }
     
-    @objc public func getRequestBodyFilepath() -> String
-    {
+    @objc public func getRequestBodyFilepath() -> String {
         let dir = getDocumentsPath() as NSString
         return dir.appendingPathComponent(getRequestBodyFilename())
     }
     
-    @objc public func getRequestBodyFilename() -> String
-    {
+    @objc public func getRequestBodyFilename() -> String {
         return String("nfx_request_body_") + "\(self.requestTime!)_\(getRandomHash() as String)"
     }
     
-    @objc public func getResponseBodyFilepath() -> String
-    {
+    @objc public func getResponseBodyFilepath() -> String {
         let dir = getDocumentsPath() as NSString
         return dir.appendingPathComponent(getResponseBodyFilename())
     }
     
-    @objc public func getResponseBodyFilename() -> String
-    {
+    @objc public func getResponseBodyFilename() -> String {
         return String("nfx_response_body_") + "\(self.requestTime!)_\(getRandomHash() as String)"
     }
     
-    @objc public func getDocumentsPath() -> String
-    {
-        return NSSearchPathForDirectoriesInDomains(FileManager.SearchPathDirectory.documentDirectory, FileManager.SearchPathDomainMask.allDomainsMask, true).first!
+    @objc public func getDocumentsPath() -> String {
+        return NSSearchPathForDirectoriesInDomains(.documentDirectory, .allDomainsMask, true)[0]
     }
     
-    @objc public func saveData(_ dataString: NSString, toFile: String)
-    {
+    @objc public func saveData(_ dataString: NSString, toFile: String) {
         do {
             try dataString.write(toFile: toFile, atomically: false, encoding: String.Encoding.utf8.rawValue)
         } catch {
@@ -206,13 +230,17 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         }
     }
     
-    @objc public func readRawData(_ fromFile: String) -> Data?
-    {
-        return (try? Data(contentsOf: URL(fileURLWithPath: fromFile)))
+    @objc public func readRawData(from filePath: String) -> Data? {
+        do {
+            let data = try Data(contentsOf: URL(fileURLWithPath: filePath))
+            return data
+        } catch {
+            print(error.localizedDescription)
+            return nil
+        }
     }
     
-    @objc public func getTimeFromDate(_ date: Date) -> String?
-    {
+    @objc public func getTimeFromDate(_ date: Date) -> String? {
         let calendar = Calendar.current
         let components = (calendar as NSCalendar).components([.hour, .minute], from: date)
         guard let hour = components.hour, let minutes = components.minute else {
@@ -225,8 +253,7 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         }
     }
     
-    public func getShortTypeFrom(_ contentType: String) -> HTTPModelShortType
-    {
+    public func getShortTypeFrom(_ contentType: String) -> HTTPModelShortType {
         if NSPredicate(format: "SELF MATCHES %@",
                                 "^application/(vnd\\.(.*)\\+)?json$").evaluate(with: contentType) {
             return .JSON
@@ -247,14 +274,13 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         return .OTHER
     }
     
-    public func prettyPrint(_ rawData: Data, type: HTTPModelShortType) -> NSString?
-    {
+    public func prettyPrint(_ rawData: Data, type: HTTPModelShortType) -> String? {
         switch type {
         case .JSON:
             do {
                 let rawJsonData = try JSONSerialization.jsonObject(with: rawData, options: [])
                 let prettyPrintedString = try JSONSerialization.data(withJSONObject: rawJsonData, options: [.prettyPrinted])
-                return NSString(data: prettyPrintedString, encoding: String.Encoding.utf8.rawValue)
+                return String(data: prettyPrintedString, encoding: .utf8)
             } catch {
                 return nil
             }
@@ -265,15 +291,13 @@ fileprivate func < <T : Comparable>(lhs: T?, rhs: T?) -> Bool {
         }
     }
     
-    @objc public func isSuccessful() -> Bool
-    {
+    @objc public func isSuccessful() -> Bool {
         if (self.responseStatus != nil) && (self.responseStatus < 400) {
             return true
         } else {
             return false
         }
     }
-    
     
     @objc public func formattedRequestLogEntry() -> String {
         var log = String()

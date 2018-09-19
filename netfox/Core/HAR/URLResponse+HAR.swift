@@ -13,6 +13,7 @@ let INCLUDE_RESPONSE_BODY = true
 extension URLResponse {
     var HARRepresentation: HARType {
         var responseHAR: HARType = [:]
+
         var HARCookies: [Any] = []
 
         // Sometimes (for example from a data: URL) we just get an NSURLResponse, not

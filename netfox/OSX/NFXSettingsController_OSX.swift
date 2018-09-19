@@ -21,7 +21,7 @@ class NFXSettingsController_OSX: NFXSettingsController, NSTableViewDataSource, N
     
     override func awakeFromNib() {
         self.tableData = HTTPModelShortType.allValues
-        self.filters =  NFX.sharedInstance().getCachedFilters()
+        self.filters =  NFX.shared.getCachedFilters()
         
         nfxVersionLabel.stringValue = nfxVersionString
         nfxURLButton.title = nfxURL
@@ -37,7 +37,7 @@ class NFXSettingsController_OSX: NFXSettingsController, NSTableViewDataSource, N
     
     override func viewWillDisappear() {
         super.viewWillDisappear()
-        NFX.sharedInstance().cacheFilters(filters)
+        NFX.shared.cacheFilters(filters)
     }
     
     // MARK: Actions
@@ -51,14 +51,14 @@ class NFXSettingsController_OSX: NFXSettingsController, NSTableViewDataSource, N
         #endif
         
         if senderStateOn {
-            NFX.sharedInstance().enable()
+            NFX.shared.enable()
         } else {
-            NFX.sharedInstance().disable()
+            NFX.shared.disable()
         }
     }
     
     @IBAction func clearDataClicked(sender: AnyObject?) {
-        NFX.sharedInstance().clearOldData()
+        NFX.shared.clearOldData()
         NotificationCenter.default.post(name: NSNotification.Name.NFXReloadData, object: nil)
     }
     
@@ -72,7 +72,7 @@ class NFXSettingsController_OSX: NFXSettingsController, NSTableViewDataSource, N
     
     @IBAction func toggleResponseTypeClicked(sender: NSButton) {
         filters[sender.tag] = !filters[sender.tag]
-        NFX.sharedInstance().cacheFilters(filters)
+        NFX.shared.cacheFilters(filters)
         NotificationCenter.default.post(name: NSNotification.Name.NFXReloadData, object: nil)
     }
     

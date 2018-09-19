@@ -9,13 +9,13 @@ import Foundation
 
 private let _sharedInstance = NFXHTTPModelManager()
 
-final class NFXHTTPModelManager: NSObject
+public final class NFXHTTPModelManager: NSObject
 {
-    static let sharedInstance = NFXHTTPModelManager()
+    public static let sharedInstance = NFXHTTPModelManager()
     fileprivate var models = [NFXHTTPModel]()
     private let syncQueue = DispatchQueue(label: "NFXSyncQueue")
     
-    func add(_ obj: NFXHTTPModel)
+    public func add(_ obj: NFXHTTPModel)
     {
         syncQueue.async {
             self.models.insert(obj, at: 0)
@@ -23,7 +23,7 @@ final class NFXHTTPModelManager: NSObject
         }
     }
     
-    func clear()
+    public func clear()
     {
         syncQueue.async {
             self.models.removeAll()
@@ -35,7 +35,7 @@ final class NFXHTTPModelManager: NSObject
     {        
         var predicates = [NSPredicate]()
         
-        let filterValues = NFX.sharedInstance().getCachedFilters()
+        let filterValues = NFX.shared.getCachedFilters()
         let filterNames = HTTPModelShortType.allValues
         
         var index = 0

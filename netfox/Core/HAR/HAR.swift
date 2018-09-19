@@ -12,6 +12,53 @@ import UIKit
 let DEBUG_TIMING = false
 
 class HAR {
+    static var templateHeader: [[String: Any]] = [
+        ["name": "Content-Type", "value": "application/json"],
+        ["name": "Content-Length", "value": "0"],
+        ["name": "x-powered-by", "value": "?"],
+        ["name": "Date", "value": Date().description],
+        ["name": "Content-Language", "value": "en-US"],
+        ["name": "Vary", "value": "Accept-Encoding"],
+        ["name": "Content-Encoding", "value": "gzip"],
+        ["name": "Server", "value": "nginx/1.6.2"]
+    ]
+
+    static var defaultHARRequest: HARType {
+        return [
+            HARConstants.HARMethod: "GET",
+            HARConstants.HARURL: "http://defaultSocketURL",
+            HARConstants.HARHTTPVersion: "HTTP/1.1",
+            HARConstants.HARCookies: [],
+            HARConstants.HARHeaders: templateHeader,
+            HARConstants.HARQueryString: [["name": "", "value": ""]],
+            HARConstants.HARPostData: ["mimeType":""],
+            HARConstants.HARHeadersSize: 150,
+            HARConstants.HARBodySize: 0,
+            HARConstants.HARComment: ""
+        ]
+    }
+
+    static var defaultHARResponse: HARType {
+        return [
+            HARConstants.HARMethod: "GET",
+            HARConstants.HARURL: "http://defaultSocketURL",
+            HARConstants.HARHTTPVersion: "HTTP/1.1",
+            HARConstants.HARCookies: [],
+            HARConstants.HARHeaders: templateHeader,
+            HARConstants.HARQueryString: [],
+            HARConstants.HARPostData: [:],
+            HARConstants.HARHeadersSize: 150,
+            HARConstants.HARBodySize: 0,
+            HARConstants.HARComment: "",
+            HARConstants.HARRedirectURL: "",
+            HARConstants.HARStatus: "",
+            HARConstants.HARStatusText: "",
+            HARConstants.HARContent: ["size": 0,
+                                      "mimeType": "",
+                                      "text": ""]
+        ]
+    }
+
     // returns a new HAR dictionary populated with Creator and Browser entries
     // and including an empty mutable Entries array
     static var HAR: [String: Any] {
@@ -22,8 +69,8 @@ class HAR {
             let infoDictionary = Bundle.main.infoDictionary,
             let bundleDisplayName = infoDictionary["CFBundleDisplayName"],
             let bundleVersion = infoDictionary["CFBundleVersion"]
-        else {
-            return [:]
+            else {
+                return [:]
         }
 
         // put datas to the HAR Creator record.
@@ -56,7 +103,7 @@ class HAR {
     static func HARPage(with pageId: String, title: String, pageProperties: [String: Any]) -> [String: Any] {
         let pageTimings = [
             HARConstants.HAROnContentLoad:
-            HARConstants.HARUnknownTimeInterval
+                HARConstants.HARUnknownTimeInterval
         ]
 
         var result: [String: Any] = [
@@ -124,7 +171,7 @@ class HAR {
                 HARConstants.HARDomain: cookie.domain,
                 HARConstants.HARExpires: expiresDate,
                 HARConstants.HARHTTPOnly: cookie.isHTTPOnly,
-            ]
+                ]
             return HARCookie
         }
 
@@ -186,7 +233,6 @@ class HAR {
                        HARConstants.HARVersion: versionNumber]
 
         // pages
-<<<<<<< HEAD
         let pages: [[String: Any]] = [[
             HARConstants.HARStarted: modelObjects.last?.requestDate?.ISO8601Representation ?? Date().ISO8601Representation,
             HARConstants.HARId: appNameVersionCombined,
@@ -194,18 +240,8 @@ class HAR {
             HARConstants.HARPageTimings: [
                 HARConstants.HAROnContentLoad: 0.0,
                 HARConstants.HAROnLoad: 0.0
-            ]]
-=======
-        let pages: [String: Any] = [
-            HARConstants.HARStarted: modelObjects.last?.requestDate?.ISO8601Representation ?? Date().ISO8601Representation,
-            HARConstants.HARId: appNameVersionCombined,
-            HARConstants.HARTitle: appNameVersionCombined,
-            HARConstants.HARTimings: [
-                HARConstants.HAROnContentLoad: 0.0,
-                HARConstants.HAROnContentLoad: 0.0
             ]
->>>>>>> a50dc1e... add HAR support
-        ]
+            ]]
 
         // entries
         typealias HAREntry = [String: Any]
@@ -227,8 +263,8 @@ class HAR {
                 HARConstants.HARPageRef: appNameVersionCombined,
                 HARConstants.HARStarted: (model.requestDate ?? Date()).ISO8601Representation,
                 HARConstants.HARTime: wait,
-                HARConstants.HARRequest: model.HARRequest ?? [:],
-                HARConstants.HARResponse: model.HARresponse ?? [:],
+                HARConstants.HARRequest: model.HARRequest,
+                HARConstants.HARResponse: model.HARresponse,
                 HARConstants.HARCache: ["": ""],
                 HARConstants.HARTimings: timings
             ]
@@ -250,11 +286,8 @@ class HAR {
             let jsonData = try JSONSerialization.data(withJSONObject: resultDictionary,
                                                       options: JSONSerialization.WritingOptions.prettyPrinted)
             let resultString = String(data: jsonData, encoding: .utf8) ?? "wrong string"
-<<<<<<< HEAD
-            print("👉\(resultString)👈")
-=======
-            //print("👉\(resultString)👈"")
->>>>>>> a50dc1e... add HAR support
+
+            //print("👉\(resultString)👈")
 
             let fileName = String(format: "%@ %@.har", appNameVersionCombined, Date().description)
             let filePath = (NSSearchPathForDirectoriesInDomains(.documentDirectory, .userDomainMask, true)

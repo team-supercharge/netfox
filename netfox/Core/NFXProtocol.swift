@@ -27,26 +27,32 @@ open class NFXProtocol: URLProtocol
     
     fileprivate class func canServeRequest(_ request: URLRequest) -> Bool
     {
-        if !NFX.sharedInstance().isEnabled() {
+        if !NFX.shared.isEnabled() {
             return false
         }
-        
-        if let url = request.url {
-            if !(url.absoluteString.hasPrefix("http")) && !(url.absoluteString.hasPrefix("https")) {
-                return false
-            }
-            
-            for ignoredURL in NFX.sharedInstance().getIgnoredURLs() {
-                if url.absoluteString.hasPrefix(ignoredURL) {
-                    return false
-                }
-            }
-        } else {
-            return false
-        }
-        
+
         if URLProtocol.property(forKey: "NFXInternal", in: request) != nil {
             return false
+        }
+        
+        guard let url = request.url else {
+            return false
+        }
+
+        if !(url.absoluteString.hasPrefix("http")) && !(url.absoluteString.hasPrefix("https")) {
+            return false
+        }
+            
+        for ignoredURL in NFX.shared.getIgnoredURLs() {
+            if url.absoluteString.hasPrefix(ignoredURL) {
+                return false
+            }
+        }
+
+        for filter in NFX.shared.getServerFilters() {
+            if !url.absoluteString.contains(filter) {
+                return false
+            }
         }
         
         return true

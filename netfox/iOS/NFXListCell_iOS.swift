@@ -24,7 +24,6 @@ class NFXListCell: UITableViewCell
     var leftSeparator: UIView!
     var rightSeparator: UIView!
     var circleView: UIView!
-
     
     override init(style: UITableViewCellStyle, reuseIdentifier: String?)
     {
@@ -134,20 +133,19 @@ class NFXListCell: UITableViewCell
         self.URLLabel.text = url
     }
     
-    func setStatus(_ status: Int)
-    {
+    func setStatus(_ status: Int) {
         if status == 999 {
             self.statusView.backgroundColor = UIColor.NFXGray44Color() //gray
             self.timeIntervalLabel.textColor = UIColor.white
-
+        } else if status == -10 { // GRAPHQL
+            self.statusView.backgroundColor = UIColor.NFXYellowColor() //yellow
+            self.timeIntervalLabel.textColor = UIColor.NFXGray44Color()
         } else if status < 400 {
             self.statusView.backgroundColor = UIColor.NFXGreenColor() //green
             self.timeIntervalLabel.textColor = UIColor.NFXDarkGreenColor()
-
         } else {
             self.statusView.backgroundColor = UIColor.NFXRedColor() //red
             self.timeIntervalLabel.textColor = UIColor.NFXDarkRedColor()
-
         }
     }
     
@@ -177,7 +175,7 @@ class NFXListCell: UITableViewCell
     
     func isNewBasedOnDate(_ responseDate: Date)
     {
-        if responseDate.isGreaterThanDate(NFX.sharedInstance().getLastVisitDate()) {
+        if responseDate.isGreaterThanDate(NFX.shared.getLastVisitDate()) {
             self.isNew()
         } else {
             self.isOld()

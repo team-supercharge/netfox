@@ -93,6 +93,11 @@ extension NFXColor
     {
         return NFXColor.init(netHex: 0x231f20)
     }
+
+    class func NFXYellowColor() -> NFXColor
+    {
+        return NFXColor.init(red: 229/255, green: 166/255, blue: 28/255, alpha: 1.0)
+    }
 }
 
 extension NFXFont

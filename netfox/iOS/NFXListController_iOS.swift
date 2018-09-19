@@ -9,10 +9,10 @@
     
 import Foundation
 import UIKit
-
+import MessageUI
 
 @available(iOS 8.0, *)
-class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, UISearchControllerDelegate
+class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableViewDataSource, UISearchResultsUpdating, UISearchControllerDelegate, MFMailComposeViewControllerDelegate, UINavigationControllerDelegate
 {
     // MARK: Properties
     
@@ -40,7 +40,15 @@ class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableView
 
         self.navigationItem.leftBarButtonItem = UIBarButtonItem(image: UIImage.NFXClose(), style: .plain, target: self, action: #selector(NFXListController_iOS.closeButtonPressed))
 
-        self.navigationItem.rightBarButtonItem = UIBarButtonItem(image: UIImage.NFXSettings(), style: .plain, target: self, action: #selector(NFXListController_iOS.settingsButtonPressed))
+        let settingsButton = UIBarButtonItem(image: UIImage.NFXSettings(),
+                                             style: .plain,
+                                             target: self,
+                                             action: #selector(NFXListController_iOS.settingsButtonPressed))
+        let exportHARButton = UIBarButtonItem(title: "💾 HAR",
+                                              style: .done,
+                                              target: self,
+                                              action: #selector(NFXListController_iOS.exportHARButtonPressed))
+        self.navigationItem.rightBarButtonItems = [settingsButton, exportHARButton]
         
         self.searchController = UISearchController(searchResultsController: nil)
         self.searchController.searchResultsUpdater = self
@@ -95,9 +103,23 @@ class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableView
         self.navigationController?.pushViewController(settingsController, animated: true)
     }
 
+    @objc func exportHARButtonPressed()
+    {
+        let models = NFXHTTPModelManager.sharedInstance.getModels()
+        
+        guard let fileUrl = HAR.generateWithModelObjects(modelObjects: models) else {
+            return
+        }
+
+        let activityViewController = UIActivityViewController(
+            activityItems: ["Check out this HAR file.", fileUrl],
+            applicationActivities: nil)
+        present(activityViewController, animated: true, completion: nil)
+    }
+
     @objc func closeButtonPressed()
     {
-        NFX.sharedInstance().hide()
+        NFX.shared.hide()
     }
     
     // MARK: UISearchResultsUpdating
@@ -121,8 +143,6 @@ class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableView
             return self.filteredTableData.count
         } else {
             let models = NFXHTTPModelManager.sharedInstance.getModels()
-            let url = HAR.generateWithModelObjects(modelObjects: models)
-            print(url ?? "no url")
             return models.count
         }
     }
@@ -184,6 +204,9 @@ class NFXListController_iOS: NFXListController, UITableViewDelegate, UITableView
         return 58
     }
 
+    func mailComposeController(_ controller: MFMailComposeViewController, didFinishWith result: MFMailComposeResult, error: Error?) {
+        controller.dismiss(animated: true, completion: nil)
+    }
 }
 
 #endif

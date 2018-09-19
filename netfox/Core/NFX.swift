@@ -45,7 +45,7 @@ open class NFX: NSObject
     }
     
     // the sharedInstance class method can be reached from ObjC
-    @objc open class func sharedInstance() -> NFX
+    @objc open class var shared: NFX
     {
         return NFX.swiftSharedInstance
     }
@@ -61,6 +61,7 @@ open class NFX: NSObject
     fileprivate var enabled: Bool = false
     fileprivate var selectedGesture: ENFXGesture = .shake
     fileprivate var ignoredURLs = [String]()
+    fileprivate var serverFilters = [String]()
     fileprivate var filters = [Bool]()
     fileprivate var lastVisitDate: Date = Date()
     internal var cacheStoragePolicy = URLCache.StoragePolicy.notAllowed
@@ -167,6 +168,16 @@ open class NFX: NSObject
     {
         self.ignoredURLs.append(url)
     }
+
+    @objc open func addServerFilter(_ filter: String)
+    {
+        self.serverFilters.append(filter)
+    }
+
+    @objc open func addCustomRequest(_ request: URLRequest)
+    {
+        
+    }
     
     internal func getLastVisitDate() -> Date
     {
@@ -221,6 +232,10 @@ open class NFX: NSObject
     func getIgnoredURLs() -> [String]
     {
         return self.ignoredURLs
+    }
+
+    func getServerFilters() -> [String] {
+        return self.serverFilters
     }
     
     func getSelectedGesture() -> ENFXGesture
