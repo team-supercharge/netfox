@@ -28,6 +28,8 @@ let nfxWillCloseNotification = "NFXWillCloseNotification"
 @objc
 open class NFX: NSObject
 {
+    var navigationController: UINavigationController?
+
     #if os(OSX)
         var windowController: NFXWindowController?
         let mainMenu: NSMenu? = NSApp.mainMenu?.items[1].submenu
@@ -271,7 +273,11 @@ extension NFX {
 
     fileprivate func showNFXFollowingPlatform()
     {
-        let navigationController = UINavigationController(rootViewController: NFXListController_iOS())
+        navigationController = UINavigationController(rootViewController: NFXListController_iOS())
+        guard let navigationController = navigationController else {
+            return
+        }
+
         navigationController.navigationBar.isTranslucent = false
         navigationController.navigationBar.tintColor = UIColor.NFXOrangeColor()
         navigationController.navigationBar.barTintColor = UIColor.NFXStarkWhiteColor()
@@ -280,17 +286,16 @@ extension NFX {
         #else
             navigationController.navigationBar.titleTextAttributes = [NSAttributedStringKey.foregroundColor: UIColor.NFXOrangeColor()]
         #endif
-        
-        presentingViewController?.present(navigationController, animated: true, completion: nil)
+
+        let keyWindow = UIApplication.shared.windows.first
+        keyWindow?.addSubview(navigationController.view)
+        keyWindow?.bringSubview(toFront: navigationController.view)
     }
     
     fileprivate func hideNFXFollowingPlatform(_ completion: (() -> Void)?)
     {
-        presentingViewController?.dismiss(animated: true, completion: { () -> Void in
-            if let notNilCompletion = completion {
-                notNilCompletion()
-            }
-        })
+        navigationController?.view.removeFromSuperview()
+        completion?()
     }
 }
 
